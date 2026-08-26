@@ -154,11 +154,18 @@ mvn clean compile
 mvn clean test
 ```
 
-Para ver el flujo completo de una reserva (crear, confirmar y cancelar):
+El sistema se usa desde un menú de consola que permite ver horarios, solicitar una tutoría, confirmarla, cancelarla, reprogramarla, marcarla como realizada y consultar las tutorías del estudiante. Para iniciarlo en Windows:
 
 ```
+ejecutar.bat
+```
+
+O de forma manual:
+
+```
+chcp 65001
 mvn compile
-java -cp target/classes edu.uees.tutorias.App
+java -Dstdout.encoding=UTF-8 -cp target/classes edu.uees.tutorias.App
 ```
 
 ## Declaración de uso de IA
