@@ -10,11 +10,12 @@ Los estudiantes necesitan reservar tutorías con los docentes de sus asignaturas
 
 | Clase / Interfaz | Responsabilidad |
 |---|---|
+| `Usuario` (abstracta) | Generaliza la identidad común de estudiantes y docentes (id, nombre, correo). |
 | `Estudiante` | Representa al estudiante y mantiene sus reservas realizadas. |
 | `Docente` | Publica horarios de tutoría y gestiona su disponibilidad. |
 | `HorarioTutoria` | Representa un bloque de tutoría de un docente y controla si está disponible u ocupado. |
 | `Asignatura` | Identifica la materia sobre la que se da la tutoría. |
-| `Reserva` | Registra el encuentro y protege las reglas de transición entre estados. |
+| `Reserva` | Registra el encuentro, protege las reglas de transición entre estados y permite reprogramar hacia otro horario disponible. |
 | `EstadoReserva` | Enumera los estados válidos de una reserva. |
 | `ServicioReservas` | Coordina la creación, confirmación y cancelación de reservas usando el repositorio y el notificador. |
 | `RepositorioReservas` (interfaz) | Define cómo se guarda y se busca una reserva sin fijar la tecnología. |
@@ -24,8 +25,9 @@ Los estudiantes necesitan reservar tutorías con los docentes de sus asignaturas
 
 ## Decisiones de diseño
 
-- Se usó composición en lugar de herencia: una `Reserva` se compone de un `Estudiante`, un `HorarioTutoria` y una `Asignatura`, porque la relación real es "tiene un", no "es un".
-- Las reglas de estado viven dentro de `Reserva` (`confirmar`, `cancelar`, `marcarRealizada`): el atributo `estado` no tiene setter público, así ningún otro componente puede saltarse las validaciones.
+- La herencia se usó solo donde existe una relación "es un" real: `Estudiante` y `Docente` son tipos de `Usuario` y comparten identidad y correo de contacto; la superclase es abstracta porque un usuario genérico no existe en el dominio.
+- Para el resto de relaciones se usó composición: una `Reserva` se compone de un `Estudiante`, un `HorarioTutoria` y una `Asignatura`, porque la relación real es "tiene un", no "es un".
+- Las reglas de estado viven dentro de `Reserva` (`confirmar`, `cancelar`, `marcarRealizada`, `reprogramar`): el atributo `estado` no tiene setter público, así ningún otro componente puede saltarse las validaciones. Reprogramar libera el horario anterior, ocupa el nuevo y devuelve la reserva a pendiente.
 - `HorarioTutoria` encapsula su disponibilidad con `reservar()` y `liberar()`, de modo que no se puede ocupar dos veces el mismo horario.
 - `ServicioReservas` concentra la coordinación del caso de uso (validar disponibilidad, crear la reserva, guardar y notificar) para que las clases del dominio no dependan de infraestructura.
 
@@ -41,17 +43,17 @@ El diagrama fuente está en [docs/modelo-clases.puml](docs/modelo-clases.puml) y
 
 ```mermaid
 classDiagram
-    class Estudiante {
+    class Usuario {
+        <<abstract>>
         -String id
         -String nombre
         -String correo
+    }
+    class Estudiante {
         +agregarReserva(Reserva) void
         +consultarTutorias() List~Reserva~
     }
     class Docente {
-        -String id
-        -String nombre
-        -String correo
         +publicarHorario(HorarioTutoria) void
         +gestionarDisponibilidad(String, boolean) void
         +consultarHorariosDisponibles() List~HorarioTutoria~
@@ -76,6 +78,7 @@ classDiagram
         +confirmar() void
         +cancelar() void
         +marcarRealizada() void
+        +reprogramar(HorarioTutoria) void
     }
     class EstadoReserva {
         <<enumeration>>
@@ -107,14 +110,15 @@ classDiagram
         +buscar(String) Reserva
         +actualizar(Reserva) void
     }
+    Usuario <|-- Estudiante
+    Usuario <|-- Docente
     Estudiante "1" -- "0..*" Reserva : realiza
-    Reserva "0..*" -- "1" HorarioTutoria : usa
-    HorarioTutoria "0..*" -- "1" Docente : pertenece a
+    Docente "1" -- "0..*" HorarioTutoria : publica
+    Reserva "0..1" -- "1" HorarioTutoria : se asigna a
     Reserva "0..*" -- "1" Asignatura : corresponde a
     Reserva ..> EstadoReserva
-    ServicioReservas --> RepositorioReservas
-    ServicioReservas --> Notificador
-    ServicioReservas ..> Reserva
+    ServicioReservas ..> RepositorioReservas
+    ServicioReservas ..> Notificador
     NotificadorCorreo ..|> Notificador
     RepositorioReservasMemoria ..|> RepositorioReservas
 ```

@@ -1,18 +1,18 @@
 @startuml modelo-clases
 skinparam classAttributeIconSize 0
 
-class Estudiante {
+abstract class Usuario {
   - id: String
   - nombre: String
   - correo: String
+}
+
+class Estudiante {
   + agregarReserva(reserva: Reserva): void
   + consultarTutorias(): List<Reserva>
 }
 
 class Docente {
-  - id: String
-  - nombre: String
-  - correo: String
   + publicarHorario(horario: HorarioTutoria): void
   + gestionarDisponibilidad(horarioId: String, disponible: boolean): void
   + consultarHorariosDisponibles(): List<HorarioTutoria>
@@ -37,9 +37,13 @@ class Asignatura {
 class Reserva {
   - id: String
   - estado: EstadoReserva
+  - estudiante: Estudiante
+  - horario: HorarioTutoria
+  - asignatura: Asignatura
   + confirmar(): void
   + cancelar(): void
   + marcarRealizada(): void
+  + reprogramar(nuevoHorario: HorarioTutoria): void
 }
 
 enum EstadoReserva {
@@ -75,15 +79,17 @@ class RepositorioReservasMemoria {
   + actualizar(reserva: Reserva): void
 }
 
+Usuario <|-- Estudiante
+Usuario <|-- Docente
+
 Estudiante "1" -- "0..*" Reserva : realiza
-Reserva "0..*" -- "1" HorarioTutoria : usa
-HorarioTutoria "0..*" -- "1" Docente : pertenece a
+Docente "1" -- "0..*" HorarioTutoria : publica
+Reserva "0..1" -- "1" HorarioTutoria : se asigna a
 Reserva "0..*" -- "1" Asignatura : corresponde a
 Reserva ..> EstadoReserva
 
-ServicioReservas --> "1" RepositorioReservas
-ServicioReservas --> "1" Notificador
-ServicioReservas ..> Reserva
+ServicioReservas ..> Notificador
+ServicioReservas ..> RepositorioReservas
 
 NotificadorCorreo ..|> Notificador
 RepositorioReservasMemoria ..|> RepositorioReservas
