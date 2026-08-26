@@ -1,0 +1,91 @@
+@startuml modelo-clases
+skinparam classAttributeIconSize 0
+
+class Estudiante {
+  - id: String
+  - nombre: String
+  - correo: String
+  + agregarReserva(reserva: Reserva): void
+  + consultarTutorias(): List<Reserva>
+}
+
+class Docente {
+  - id: String
+  - nombre: String
+  - correo: String
+  + publicarHorario(horario: HorarioTutoria): void
+  + gestionarDisponibilidad(horarioId: String, disponible: boolean): void
+  + consultarHorariosDisponibles(): List<HorarioTutoria>
+}
+
+class HorarioTutoria {
+  - id: String
+  - fecha: LocalDate
+  - horaInicio: LocalTime
+  - horaFin: LocalTime
+  - disponible: boolean
+  + verificarDisponibilidad(): boolean
+  + reservar(): void
+  + liberar(): void
+}
+
+class Asignatura {
+  - id: String
+  - nombre: String
+}
+
+class Reserva {
+  - id: String
+  - estado: EstadoReserva
+  + confirmar(): void
+  + cancelar(): void
+  + marcarRealizada(): void
+}
+
+enum EstadoReserva {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
+  REALIZADA
+}
+
+class ServicioReservas {
+  + crearReserva(estudiante: Estudiante, horario: HorarioTutoria, asignatura: Asignatura): Reserva
+  + confirmarReserva(reservaId: String): void
+  + cancelarReserva(reservaId: String): void
+}
+
+interface Notificador {
+  + enviarNotificacion(destinatario: String, mensaje: String): void
+}
+
+class NotificadorCorreo {
+  + enviarNotificacion(destinatario: String, mensaje: String): void
+}
+
+interface RepositorioReservas {
+  + guardar(reserva: Reserva): void
+  + buscar(id: String): Reserva
+  + actualizar(reserva: Reserva): void
+}
+
+class RepositorioReservasMemoria {
+  + guardar(reserva: Reserva): void
+  + buscar(id: String): Reserva
+  + actualizar(reserva: Reserva): void
+}
+
+Estudiante "1" -- "0..*" Reserva : realiza
+Reserva "0..*" -- "1" HorarioTutoria : usa
+HorarioTutoria "0..*" -- "1" Docente : pertenece a
+Reserva "0..*" -- "1" Asignatura : corresponde a
+Reserva ..> EstadoReserva
+
+ServicioReservas --> "1" RepositorioReservas
+ServicioReservas --> "1" Notificador
+ServicioReservas ..> Reserva
+
+NotificadorCorreo ..|> Notificador
+RepositorioReservasMemoria ..|> RepositorioReservas
+
+@enduml
