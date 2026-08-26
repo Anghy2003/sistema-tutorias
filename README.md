@@ -2,6 +2,8 @@
 
 Proyecto de la Actividad 5 (Ae1) de Diseño de Software (UCOM0310), Universidad Espíritu Santo. Implementa el modelo orientado a objetos de un sistema de gestión de tutorías académicas en Java con Maven.
 
+Repositorio: https://github.com/Anghy2003/sistema-tutorias
+
 ## Descripción del problema
 
 Los estudiantes necesitan reservar tutorías con los docentes de sus asignaturas. Los docentes publican horarios disponibles, el estudiante solicita una reserva sobre uno de esos horarios y la reserva pasa por distintos estados (pendiente, confirmada, cancelada o realizada). El sistema debe validar la disponibilidad, notificar los eventos importantes al estudiante y guardar la información sin que la lógica del dominio dependa de una tecnología concreta.
