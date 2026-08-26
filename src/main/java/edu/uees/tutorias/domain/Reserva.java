@@ -4,7 +4,7 @@ public class Reserva {
 
     private final String id;
     private final Estudiante estudiante;
-    private final HorarioTutoria horario;
+    private HorarioTutoria horario;
     private final Asignatura asignatura;
     private EstadoReserva estado;
 
@@ -35,6 +35,19 @@ public class Reserva {
             throw new IllegalStateException("Solo una reserva confirmada se puede marcar como realizada");
         }
         estado = EstadoReserva.REALIZADA;
+    }
+
+    public void reprogramar(HorarioTutoria nuevoHorario) {
+        if (estado == EstadoReserva.CANCELADA || estado == EstadoReserva.REALIZADA) {
+            throw new IllegalStateException("Solo se puede reprogramar una reserva pendiente o confirmada");
+        }
+        if (!nuevoHorario.verificarDisponibilidad()) {
+            throw new IllegalStateException("El nuevo horario no está disponible");
+        }
+        horario.liberar();
+        nuevoHorario.reservar();
+        horario = nuevoHorario;
+        estado = EstadoReserva.PENDIENTE;
     }
 
     public String getId() {
