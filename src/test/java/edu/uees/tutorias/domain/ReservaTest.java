@@ -54,4 +54,37 @@ class ReservaTest {
         reserva.marcarRealizada();
         assertThrows(IllegalStateException.class, reserva::cancelar);
     }
+
+    @Test
+    void reprogramarCambiaElHorarioYVuelveAPendiente() {
+        Reserva reserva = crearReserva();
+        reserva.getHorario().reservar();
+        reserva.confirmar();
+        HorarioTutoria nuevoHorario = new HorarioTutoria("H02", reserva.getHorario().getDocente(),
+                LocalDate.of(2026, 8, 29), LocalTime.of(14, 0), LocalTime.of(15, 0));
+        HorarioTutoria horarioAnterior = reserva.getHorario();
+        reserva.reprogramar(nuevoHorario);
+        assertEquals(nuevoHorario, reserva.getHorario());
+        assertEquals(EstadoReserva.PENDIENTE, reserva.getEstado());
+        assertEquals(true, horarioAnterior.verificarDisponibilidad());
+        assertEquals(false, nuevoHorario.verificarDisponibilidad());
+    }
+
+    @Test
+    void noSePuedeReprogramarUnaReservaCancelada() {
+        Reserva reserva = crearReserva();
+        reserva.cancelar();
+        HorarioTutoria nuevoHorario = new HorarioTutoria("H02", reserva.getHorario().getDocente(),
+                LocalDate.of(2026, 8, 29), LocalTime.of(14, 0), LocalTime.of(15, 0));
+        assertThrows(IllegalStateException.class, () -> reserva.reprogramar(nuevoHorario));
+    }
+
+    @Test
+    void noSePuedeReprogramarHaciaUnHorarioOcupado() {
+        Reserva reserva = crearReserva();
+        HorarioTutoria nuevoHorario = new HorarioTutoria("H02", reserva.getHorario().getDocente(),
+                LocalDate.of(2026, 8, 29), LocalTime.of(14, 0), LocalTime.of(15, 0));
+        nuevoHorario.reservar();
+        assertThrows(IllegalStateException.class, () -> reserva.reprogramar(nuevoHorario));
+    }
 }
