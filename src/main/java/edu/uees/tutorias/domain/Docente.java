@@ -3,17 +3,12 @@ package edu.uees.tutorias.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Docente {
+public class Docente extends Usuario {
 
-    private final String id;
-    private final String nombre;
-    private final String correo;
     private final List<HorarioTutoria> horarios;
 
     public Docente(String id, String nombre, String correo) {
-        this.id = id;
-        this.nombre = nombre;
-        this.correo = correo;
+        super(id, nombre, correo);
         this.horarios = new ArrayList<>();
     }
 
@@ -43,17 +38,5 @@ public class Docente {
             }
         }
         return disponibles;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public String getCorreo() {
-        return correo;
     }
 }
