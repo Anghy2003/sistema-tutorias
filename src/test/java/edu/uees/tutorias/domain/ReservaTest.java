@@ -13,10 +13,15 @@ class ReservaTest {
     private Reserva crearReserva() {
         Docente docente = new Docente("D01", "María Torres", "mtorres@uees.edu.ec");
         HorarioTutoria horario = new HorarioTutoria("H01", docente,
-                LocalDate.of(2026, 8, 28), LocalTime.of(10, 0), LocalTime.of(11, 0));
+                LocalDate.now().plusDays(3), LocalTime.of(10, 0), LocalTime.of(11, 0));
         Estudiante estudiante = new Estudiante("E01", "Carlos Vera", "cvera@uees.edu.ec");
         Asignatura asignatura = new Asignatura("A01", "Diseño de Software");
-        return new Reserva("R01", estudiante, horario, asignatura);
+        return new ReservaBuilder()
+                .id("R01")
+                .estudiante(estudiante)
+                .horario(horario)
+                .asignatura(asignatura)
+                .build();
     }
 
     @Test
@@ -61,7 +66,7 @@ class ReservaTest {
         reserva.getHorario().reservar();
         reserva.confirmar();
         HorarioTutoria nuevoHorario = new HorarioTutoria("H02", reserva.getHorario().getDocente(),
-                LocalDate.of(2026, 8, 29), LocalTime.of(14, 0), LocalTime.of(15, 0));
+                LocalDate.now().plusDays(4), LocalTime.of(14, 0), LocalTime.of(15, 0));
         HorarioTutoria horarioAnterior = reserva.getHorario();
         reserva.reprogramar(nuevoHorario);
         assertEquals(nuevoHorario, reserva.getHorario());
@@ -75,7 +80,7 @@ class ReservaTest {
         Reserva reserva = crearReserva();
         reserva.cancelar();
         HorarioTutoria nuevoHorario = new HorarioTutoria("H02", reserva.getHorario().getDocente(),
-                LocalDate.of(2026, 8, 29), LocalTime.of(14, 0), LocalTime.of(15, 0));
+                LocalDate.now().plusDays(4), LocalTime.of(14, 0), LocalTime.of(15, 0));
         assertThrows(IllegalStateException.class, () -> reserva.reprogramar(nuevoHorario));
     }
 
@@ -83,7 +88,7 @@ class ReservaTest {
     void noSePuedeReprogramarHaciaUnHorarioOcupado() {
         Reserva reserva = crearReserva();
         HorarioTutoria nuevoHorario = new HorarioTutoria("H02", reserva.getHorario().getDocente(),
-                LocalDate.of(2026, 8, 29), LocalTime.of(14, 0), LocalTime.of(15, 0));
+                LocalDate.now().plusDays(4), LocalTime.of(14, 0), LocalTime.of(15, 0));
         nuevoHorario.reservar();
         assertThrows(IllegalStateException.class, () -> reserva.reprogramar(nuevoHorario));
     }

@@ -34,7 +34,7 @@ class ServicioReservasTest {
         servicio = new ServicioReservas(repositorio, (destinatario, mensaje) -> {});
         Docente docente = new Docente("D01", "María Torres", "mtorres@uees.edu.ec");
         horario = new HorarioTutoria("H01", docente,
-                LocalDate.of(2026, 8, 28), LocalTime.of(10, 0), LocalTime.of(11, 0));
+                LocalDate.now().plusDays(3), LocalTime.of(10, 0), LocalTime.of(11, 0));
         docente.publicarHorario(horario);
         estudiante = new Estudiante("E01", "Carlos Vera", "cvera@uees.edu.ec");
         asignatura = new Asignatura("A01", "Diseño de Software");

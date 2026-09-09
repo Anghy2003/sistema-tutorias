@@ -1,18 +1,37 @@
 package edu.uees.tutorias.domain;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+/**
+ * Reserva de una tutoria.
+ *
+ * Incremento 1: ademas de su estado, la reserva conoce su modalidad, su
+ * prioridad y, cuando es virtual, el enlace de la sala. El constructor completo
+ * tiene visibilidad de paquete, de modo que solo {@link ReservaBuilder} puede
+ * invocarlo.
+ */
 public class Reserva {
 
     private final String id;
     private final Estudiante estudiante;
     private HorarioTutoria horario;
     private final Asignatura asignatura;
+    private final Modalidad modalidad;
+    private final Prioridad prioridad;
+    private final String observacion;
+    private String enlaceSesion = "";
     private EstadoReserva estado;
 
-    public Reserva(String id, Estudiante estudiante, HorarioTutoria horario, Asignatura asignatura) {
+    Reserva(String id, Estudiante estudiante, HorarioTutoria horario, Asignatura asignatura,
+            Modalidad modalidad, Prioridad prioridad, String observacion) {
         this.id = id;
         this.estudiante = estudiante;
         this.horario = horario;
         this.asignatura = asignatura;
+        this.modalidad = modalidad;
+        this.prioridad = prioridad;
+        this.observacion = observacion;
         this.estado = EstadoReserva.PENDIENTE;
     }
 
@@ -50,6 +69,32 @@ public class Reserva {
         estado = EstadoReserva.PENDIENTE;
     }
 
+    /**
+     * Momento en que inicia la tutoria, combinando la fecha y la hora del horario.
+     */
+    public LocalDateTime inicio() {
+        return LocalDateTime.of(horario.getFecha(), horario.getHoraInicio());
+    }
+
+    /**
+     * Horas completas que faltan para el inicio de la tutoria. Es el dato que
+     * consultan las politicas de cancelacion; la regla en si vive en la politica.
+     */
+    public long horasRestantes() {
+        return Duration.between(LocalDateTime.now(), inicio()).toHours();
+    }
+
+    public void asignarEnlaceSesion(String enlaceSesion) {
+        if (modalidad != Modalidad.VIRTUAL) {
+            throw new IllegalStateException("Solo una tutoría virtual tiene enlace de sesión");
+        }
+        this.enlaceSesion = enlaceSesion;
+    }
+
+    public boolean esVirtual() {
+        return modalidad == Modalidad.VIRTUAL;
+    }
+
     public String getId() {
         return id;
     }
@@ -68,5 +113,21 @@ public class Reserva {
 
     public EstadoReserva getEstado() {
         return estado;
+    }
+
+    public Modalidad getModalidad() {
+        return modalidad;
+    }
+
+    public Prioridad getPrioridad() {
+        return prioridad;
+    }
+
+    public String getObservacion() {
+        return observacion;
+    }
+
+    public String getEnlaceSesion() {
+        return enlaceSesion;
     }
 }
