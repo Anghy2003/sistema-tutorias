@@ -9,22 +9,25 @@ import edu.uees.tutorias.domain.Reserva;
 import edu.uees.tutorias.domain.ReservaBuilder;
 import edu.uees.tutorias.notification.Notificador;
 import edu.uees.tutorias.repository.RepositorioReservas;
+import edu.uees.tutorias.videoconferencia.Videoconferencia;
 
 public class ServicioReservas {
 
     private final RepositorioReservas repositorio;
     private final Notificador notificador;
     private final CatalogoPoliticas politicas;
+    private final Videoconferencia videoconferencia;
 
     public ServicioReservas(RepositorioReservas repositorio, Notificador notificador) {
-        this(repositorio, notificador, new CatalogoPoliticas());
+        this(repositorio, notificador, new CatalogoPoliticas(), null);
     }
 
     public ServicioReservas(RepositorioReservas repositorio, Notificador notificador,
-                            CatalogoPoliticas politicas) {
+                            CatalogoPoliticas politicas, Videoconferencia videoconferencia) {
         this.repositorio = repositorio;
         this.notificador = notificador;
         this.politicas = politicas;
+        this.videoconferencia = videoconferencia;
     }
 
     /**
@@ -49,6 +52,9 @@ public class ServicioReservas {
         }
         horario.reservar();
         reserva.getEstudiante().agregarReserva(reserva);
+        if (reserva.esVirtual()) {
+            reserva.asignarEnlaceSesion(crearSalaVirtual(reserva));
+        }
         repositorio.guardar(reserva);
         notificador.enviarNotificacion(reserva.getEstudiante().getCorreo(),
                 "Se registró su reserva de " + reserva.getAsignatura().getNombre()
@@ -80,6 +86,20 @@ public class ServicioReservas {
         repositorio.actualizar(reserva);
         notificador.enviarNotificacion(reserva.getEstudiante().getCorreo(),
                 "Su reserva de " + reserva.getAsignatura().getNombre() + " fue cancelada");
+    }
+
+    /**
+     * Pide la sala al proveedor a traves del contrato Videoconferencia. El
+     * servicio no sabe si detras esta Zoom o Teams.
+     */
+    private String crearSalaVirtual(Reserva reserva) {
+        if (videoconferencia == null) {
+            throw new IllegalStateException(
+                    "No hay un proveedor de videoconferencia configurado para tutorías virtuales");
+        }
+        return videoconferencia.crearSala(
+                "Tutoría de " + reserva.getAsignatura().getNombre(),
+                reserva.getHorario().getDocente().getCorreo());
     }
 
     private Reserva obtenerReserva(String reservaId) {
