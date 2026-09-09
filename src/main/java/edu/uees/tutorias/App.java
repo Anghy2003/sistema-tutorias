@@ -10,18 +10,44 @@ import edu.uees.tutorias.domain.Docente;
 import edu.uees.tutorias.domain.Estudiante;
 import edu.uees.tutorias.domain.HorarioTutoria;
 import edu.uees.tutorias.domain.Reserva;
+import edu.uees.tutorias.cancelacion.CatalogoPoliticas;
+import edu.uees.tutorias.domain.Modalidad;
+import edu.uees.tutorias.domain.Prioridad;
+import edu.uees.tutorias.domain.ReservaBuilder;
+import edu.uees.tutorias.event.ObservadorBitacora;
+import edu.uees.tutorias.event.ObservadorCalendario;
+import edu.uees.tutorias.event.ObservadorNotificaciones;
 import edu.uees.tutorias.notification.NotificadorCorreo;
 import edu.uees.tutorias.repository.RepositorioReservasMemoria;
 import edu.uees.tutorias.service.ServicioReservas;
+import edu.uees.tutorias.videoconferencia.ProveedorZoomAPI;
+import edu.uees.tutorias.videoconferencia.ZoomAdapter;
 
 public class App {
 
     private static final Scanner teclado = new Scanner(System.in);
     private static final RepositorioReservasMemoria repositorio = new RepositorioReservasMemoria();
-    private static final ServicioReservas servicio = new ServicioReservas(repositorio, new NotificadorCorreo());
+    private static final ObservadorBitacora bitacora = new ObservadorBitacora();
+    private static final ServicioReservas servicio = crearServicio();
     private static Docente docente;
     private static Estudiante estudiante;
     private static List<Asignatura> asignaturas;
+
+    /**
+     * Arma el servicio con las piezas del incremento 1: catalogo de politicas de
+     * cancelacion (Strategy), proveedor de videoconferencia detras del contrato
+     * Videoconferencia (Adapter) y los tres observadores del sistema (Observer).
+     */
+    private static ServicioReservas crearServicio() {
+        ServicioReservas servicioReservas = new ServicioReservas(
+                repositorio,
+                new CatalogoPoliticas(),
+                new ZoomAdapter(new ProveedorZoomAPI()));
+        servicioReservas.agregarObservador(new ObservadorNotificaciones(new NotificadorCorreo()));
+        servicioReservas.agregarObservador(new ObservadorCalendario());
+        servicioReservas.agregarObservador(bitacora);
+        return servicioReservas;
+    }
 
     public static void main(String[] args) {
         cargarDatosIniciales();
@@ -41,6 +67,7 @@ public class App {
                 case 5 -> reprogramarReserva();
                 case 6 -> marcarRealizada();
                 case 7 -> verMisTutorias();
+                case 8 -> verBitacora();
                 case 0 -> salir = true;
                 default -> System.out.println("Esa opción no existe, intente de nuevo.");
             }
@@ -72,6 +99,7 @@ public class App {
         System.out.println("5. Reprogramar una reserva");
         System.out.println("6. Marcar tutoría como realizada");
         System.out.println("7. Ver mis tutorías");
+        System.out.println("8. Ver bitácora del sistema");
         System.out.println("0. Salir");
     }
 
@@ -106,12 +134,42 @@ public class App {
             System.out.println("Asignatura no válida.");
             return;
         }
+        Modalidad modalidad = elegirModalidad();
+        Prioridad prioridad = elegirPrioridad();
         try {
-            Reserva reserva = servicio.crearReserva(estudiante, horario, asignaturas.get(posicion - 1));
+            Reserva reserva = servicio.crearReserva(new ReservaBuilder()
+                    .estudiante(estudiante)
+                    .horario(horario)
+                    .asignatura(asignaturas.get(posicion - 1))
+                    .modalidad(modalidad)
+                    .prioridad(prioridad)
+                    .build());
             System.out.println("Reserva registrada en estado " + reserva.getEstado() + ".");
+            if (reserva.esVirtual()) {
+                System.out.println("Enlace de la sala: " + reserva.getEnlaceSesion());
+            }
         } catch (Exception e) {
             System.out.println("No se pudo crear la reserva: " + e.getMessage());
         }
+    }
+
+    private static Modalidad elegirModalidad() {
+        System.out.println("Modalidad:");
+        System.out.println("  1) Presencial");
+        System.out.println("  2) Virtual (se genera enlace de videoconferencia)");
+        return leerNumero("Elija la modalidad: ") == 2 ? Modalidad.VIRTUAL : Modalidad.PRESENCIAL;
+    }
+
+    private static Prioridad elegirPrioridad() {
+        System.out.println("Prioridad (define el plazo mínimo para cancelar):");
+        System.out.println("  1) Normal      - cancelación hasta 2 horas antes");
+        System.out.println("  2) Prioritaria - cancelación hasta 1 hora antes");
+        System.out.println("  3) Grupal      - cancelación hasta 24 horas antes");
+        return switch (leerNumero("Elija la prioridad: ")) {
+            case 2 -> Prioridad.PRIORITARIA;
+            case 3 -> Prioridad.GRUPAL;
+            default -> Prioridad.NORMAL;
+        };
     }
 
     private static void confirmarReserva() {
@@ -156,8 +214,7 @@ public class App {
             return;
         }
         try {
-            reserva.reprogramar(nuevoHorario);
-            repositorio.actualizar(reserva);
+            servicio.reprogramarReserva(reserva.getId(), nuevoHorario);
             System.out.println("Reserva reprogramada para el " + describirHorario(nuevoHorario) + ". Queda pendiente de confirmación.");
         } catch (Exception e) {
             System.out.println("No se pudo reprogramar: " + e.getMessage());
@@ -170,8 +227,7 @@ public class App {
             return;
         }
         try {
-            reserva.marcarRealizada();
-            repositorio.actualizar(reserva);
+            servicio.marcarRealizada(reserva.getId());
             System.out.println("La tutoría quedó registrada como " + reserva.getEstado() + ".");
         } catch (Exception e) {
             System.out.println("No se pudo marcar como realizada: " + e.getMessage());
@@ -189,8 +245,22 @@ public class App {
             Reserva reserva = reservas.get(i);
             System.out.println("  " + (i + 1) + ") " + reserva.getAsignatura().getNombre()
                     + " | " + describirHorario(reserva.getHorario())
+                    + " | " + reserva.getModalidad()
+                    + " | " + reserva.getPrioridad()
                     + " | Estado: " + reserva.getEstado());
+            if (reserva.esVirtual()) {
+                System.out.println("      Enlace: " + reserva.getEnlaceSesion());
+            }
         }
+    }
+
+    private static void verBitacora() {
+        if (bitacora.getRegistros().isEmpty()) {
+            System.out.println("La bitácora todavía no tiene registros.");
+            return;
+        }
+        System.out.println("Bitácora de eventos:");
+        bitacora.getRegistros().forEach(registro -> System.out.println("  " + registro));
     }
 
     private static HorarioTutoria elegirHorario(List<HorarioTutoria> disponibles) {
@@ -216,7 +286,12 @@ public class App {
             Reserva reserva = reservas.get(i);
             System.out.println("  " + (i + 1) + ") " + reserva.getAsignatura().getNombre()
                     + " | " + describirHorario(reserva.getHorario())
+                    + " | " + reserva.getModalidad()
+                    + " | " + reserva.getPrioridad()
                     + " | Estado: " + reserva.getEstado());
+            if (reserva.esVirtual()) {
+                System.out.println("      Enlace: " + reserva.getEnlaceSesion());
+            }
         }
         int posicion = leerNumero("Elija la reserva: ");
         if (posicion < 1 || posicion > reservas.size()) {

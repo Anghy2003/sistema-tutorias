@@ -2,6 +2,11 @@ package edu.uees.tutorias.domain;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.uees.tutorias.event.EventoReserva;
+import edu.uees.tutorias.event.ReservaObserver;
 
 /**
  * Reserva de una tutoria.
@@ -10,6 +15,9 @@ import java.time.LocalDateTime;
  * prioridad y, cuando es virtual, el enlace de la sala. El constructor completo
  * tiene visibilidad de paquete, de modo que solo {@link ReservaBuilder} puede
  * invocarlo.
+ *
+ * La reserva es ademas el Subject del patron Observer: publica lo que le ocurre
+ * y no sabe quien escucha ni que hace con esa informacion.
  */
 public class Reserva {
 
@@ -22,6 +30,7 @@ public class Reserva {
     private final String observacion;
     private String enlaceSesion = "";
     private EstadoReserva estado;
+    private final List<ReservaObserver> observadores = new ArrayList<>();
 
     Reserva(String id, Estudiante estudiante, HorarioTutoria horario, Asignatura asignatura,
             Modalidad modalidad, Prioridad prioridad, String observacion) {
@@ -35,11 +44,31 @@ public class Reserva {
         this.estado = EstadoReserva.PENDIENTE;
     }
 
+    public void agregarObservador(ReservaObserver observador) {
+        observadores.add(observador);
+    }
+
+    public void eliminarObservador(ReservaObserver observador) {
+        observadores.remove(observador);
+    }
+
+    /**
+     * Publica un hecho a todos los observadores registrados. Es publico porque el
+     * servicio anuncia asi la creacion, que es el unico evento que no corresponde
+     * a un cambio de estado interno.
+     */
+    public void publicar(EventoReserva evento) {
+        for (ReservaObserver observador : observadores) {
+            observador.alOcurrir(evento, this);
+        }
+    }
+
     public void confirmar() {
         if (estado != EstadoReserva.PENDIENTE) {
             throw new IllegalStateException("Solo se puede confirmar una reserva pendiente");
         }
         estado = EstadoReserva.CONFIRMADA;
+        publicar(EventoReserva.CONFIRMADA);
     }
 
     public void cancelar() {
@@ -47,6 +76,7 @@ public class Reserva {
             throw new IllegalStateException("La reserva ya no se puede cancelar");
         }
         estado = EstadoReserva.CANCELADA;
+        publicar(EventoReserva.CANCELADA);
     }
 
     public void marcarRealizada() {
@@ -54,6 +84,7 @@ public class Reserva {
             throw new IllegalStateException("Solo una reserva confirmada se puede marcar como realizada");
         }
         estado = EstadoReserva.REALIZADA;
+        publicar(EventoReserva.REALIZADA);
     }
 
     public void reprogramar(HorarioTutoria nuevoHorario) {
@@ -67,6 +98,7 @@ public class Reserva {
         nuevoHorario.reservar();
         horario = nuevoHorario;
         estado = EstadoReserva.PENDIENTE;
+        publicar(EventoReserva.REPROGRAMADA);
     }
 
     /**
