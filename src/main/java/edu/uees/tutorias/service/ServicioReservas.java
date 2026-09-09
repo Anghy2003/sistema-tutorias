@@ -1,5 +1,7 @@
 package edu.uees.tutorias.service;
 
+import edu.uees.tutorias.cancelacion.CatalogoPoliticas;
+import edu.uees.tutorias.cancelacion.PoliticaCancelacion;
 import edu.uees.tutorias.domain.Asignatura;
 import edu.uees.tutorias.domain.Estudiante;
 import edu.uees.tutorias.domain.HorarioTutoria;
@@ -12,10 +14,17 @@ public class ServicioReservas {
 
     private final RepositorioReservas repositorio;
     private final Notificador notificador;
+    private final CatalogoPoliticas politicas;
 
     public ServicioReservas(RepositorioReservas repositorio, Notificador notificador) {
+        this(repositorio, notificador, new CatalogoPoliticas());
+    }
+
+    public ServicioReservas(RepositorioReservas repositorio, Notificador notificador,
+                            CatalogoPoliticas politicas) {
         this.repositorio = repositorio;
         this.notificador = notificador;
+        this.politicas = politicas;
     }
 
     /**
@@ -55,8 +64,17 @@ public class ServicioReservas {
                 "Su reserva de " + reserva.getAsignatura().getNombre() + " fue confirmada");
     }
 
+    /**
+     * Cancela una reserva si la politica correspondiente a su prioridad lo permite.
+     * El servicio no conoce ningun plazo: solo sabe a quien preguntar.
+     */
     public void cancelarReserva(String reservaId) {
         Reserva reserva = obtenerReserva(reservaId);
+        PoliticaCancelacion politica = politicas.politicaPara(reserva.getPrioridad());
+        if (!politica.puedeCancelar(reserva)) {
+            throw new IllegalStateException(
+                    "No se puede cancelar: " + politica.descripcion());
+        }
         reserva.cancelar();
         reserva.getHorario().liberar();
         repositorio.actualizar(reserva);
