@@ -1,0 +1,94 @@
+@startuml
+title Incremento 1 - Patrones incorporados: Strategy, Adapter y Observer (UEES)
+
+skinparam classAttributeIconSize 0
+skinparam nodesep 40
+
+class ServicioReservas {
+    + cancelarReserva(id: String): void
+    + crearReserva(reserva: Reserva): Reserva
+    + agregarObservador(o: ReservaObserver): void
+}
+
+class Reserva <<Subject>> {
+    - observadores: List<ReservaObserver>
+    + agregarObservador(o: ReservaObserver): void
+    + eliminarObservador(o: ReservaObserver): void
+    + publicar(evento: EventoReserva): void
+    + horasRestantes(): long
+}
+
+package "Strategy | politicas de cancelacion" {
+    interface PoliticaCancelacion <<Strategy>> {
+        + puedeCancelar(reserva: Reserva): boolean
+        + descripcion(): String
+    }
+    class CancelacionNormal <<ConcreteStrategy>>
+    class CancelacionPrioritaria <<ConcreteStrategy>>
+    class CancelacionGrupal <<ConcreteStrategy>>
+    class CatalogoPoliticas {
+        - politicas: Map<Prioridad, PoliticaCancelacion>
+        + registrar(p: Prioridad, politica: PoliticaCancelacion): void
+        + politicaPara(p: Prioridad): PoliticaCancelacion
+    }
+}
+
+package "Adapter | videoconferencia" {
+    interface Videoconferencia <<Target>> {
+        + crearSala(titulo: String, correoDocente: String): String
+    }
+    class ZoomAdapter <<Adapter>>
+    class TeamsAdapter <<Adapter>>
+    class ProveedorZoomAPI <<Adaptee>> {
+        + generarMeeting(topic: String, hostEmail: String): String
+    }
+    class MicrosoftTeamsAPI <<Adaptee>> {
+        + scheduleOnlineMeeting(subject: String, organizer: String): String
+    }
+}
+
+package "Observer | eventos de la reserva" {
+    interface ReservaObserver <<Observer>> {
+        + alOcurrir(evento: EventoReserva, reserva: Reserva): void
+    }
+    class ObservadorNotificaciones <<ConcreteObserver>>
+    class ObservadorCalendario <<ConcreteObserver>>
+    class ObservadorBitacora <<ConcreteObserver>> {
+        - registros: List<String>
+        + getRegistros(): List<String>
+    }
+    enum EventoReserva {
+        CREADA
+        CONFIRMADA
+        CANCELADA
+        REPROGRAMADA
+        REALIZADA
+    }
+}
+
+interface Notificador {
+    + enviarNotificacion(destinatario: String, mensaje: String): void
+}
+
+ServicioReservas --> CatalogoPoliticas
+ServicioReservas --> Videoconferencia
+ServicioReservas ..> Reserva
+CatalogoPoliticas "1" o-- "3..*" PoliticaCancelacion
+PoliticaCancelacion <|.. CancelacionNormal
+PoliticaCancelacion <|.. CancelacionPrioritaria
+PoliticaCancelacion <|.. CancelacionGrupal
+PoliticaCancelacion ..> Reserva : consulta
+
+Videoconferencia <|.. ZoomAdapter
+Videoconferencia <|.. TeamsAdapter
+ZoomAdapter --> ProveedorZoomAPI : delega
+TeamsAdapter --> MicrosoftTeamsAPI : delega
+
+Reserva "1" o-- "0..*" ReservaObserver : notifica
+ReservaObserver <|.. ObservadorNotificaciones
+ReservaObserver <|.. ObservadorCalendario
+ReservaObserver <|.. ObservadorBitacora
+ReservaObserver ..> EventoReserva
+ObservadorNotificaciones --> Notificador
+
+@enduml

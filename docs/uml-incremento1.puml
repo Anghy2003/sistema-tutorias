@@ -1,0 +1,210 @@
+@startuml
+title Sistema de gestion de tutorias - Incremento 1 (Ae3)\nDiseno OO con Builder, Strategy, Adapter y Observer
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam nodesep 45
+skinparam ranksep 55
+
+package domain {
+
+    abstract class Usuario {
+        - id: String
+        - nombre: String
+        - correo: String
+        + getNombre(): String
+        + getCorreo(): String
+    }
+
+    class Estudiante {
+        + agregarReserva(reserva: Reserva): void
+        + consultarTutorias(): List<Reserva>
+    }
+
+    class Docente {
+        + publicarHorario(horario: HorarioTutoria): void
+        + gestionarDisponibilidad(id: String, disponible: boolean): void
+        + consultarHorariosDisponibles(): List<HorarioTutoria>
+    }
+
+    class Asignatura {
+        - codigo: String
+        - nombre: String
+    }
+
+    class HorarioTutoria {
+        - id: String
+        - fecha: LocalDate
+        - horaInicio: LocalTime
+        - horaFin: LocalTime
+        - disponible: boolean
+        + verificarDisponibilidad(): boolean
+        + reservar(): void
+        + liberar(): void
+    }
+
+    class Reserva <<Subject>> {
+        - id: String
+        - estado: EstadoReserva
+        - modalidad: Modalidad
+        - prioridad: Prioridad
+        - enlaceSesion: String
+        - observadores: List<ReservaObserver>
+        ~ Reserva(...)
+        + agregarObservador(o: ReservaObserver): void
+        + eliminarObservador(o: ReservaObserver): void
+        + publicar(evento: EventoReserva): void
+        + confirmar(): void
+        + cancelar(): void
+        + reprogramar(nuevo: HorarioTutoria): void
+        + marcarRealizada(): void
+        + horasRestantes(): long
+        + esVirtual(): boolean
+    }
+
+    class ReservaBuilder <<Builder>> {
+        + estudiante(e: Estudiante): ReservaBuilder
+        + horario(h: HorarioTutoria): ReservaBuilder
+        + asignatura(a: Asignatura): ReservaBuilder
+        + modalidad(m: Modalidad): ReservaBuilder
+        + prioridad(p: Prioridad): ReservaBuilder
+        + observacion(texto: String): ReservaBuilder
+        + build(): Reserva
+        - validar(): void
+    }
+
+    enum EstadoReserva {
+        PENDIENTE
+        CONFIRMADA
+        CANCELADA
+        REALIZADA
+    }
+
+    enum Modalidad {
+        PRESENCIAL
+        VIRTUAL
+    }
+
+    enum Prioridad {
+        NORMAL
+        PRIORITARIA
+        GRUPAL
+    }
+}
+
+package service {
+    class ServicioReservas {
+        - observadores: List<ReservaObserver>
+        + agregarObservador(o: ReservaObserver): void
+        + crearReserva(reserva: Reserva): Reserva
+        + confirmarReserva(id: String): void
+        + cancelarReserva(id: String): void
+        + reprogramarReserva(id: String, h: HorarioTutoria): void
+        + marcarRealizada(id: String): void
+        - crearSalaVirtual(reserva: Reserva): String
+    }
+}
+
+package repository {
+    interface RepositorioReservas {
+        + guardar(reserva: Reserva): void
+        + buscar(id: String): Reserva
+        + actualizar(reserva: Reserva): void
+    }
+    class RepositorioReservasMemoria
+}
+
+package cancelacion {
+    interface PoliticaCancelacion <<Strategy>> {
+        + puedeCancelar(reserva: Reserva): boolean
+        + descripcion(): String
+    }
+    class CancelacionNormal <<ConcreteStrategy>>
+    class CancelacionPrioritaria <<ConcreteStrategy>>
+    class CancelacionGrupal <<ConcreteStrategy>>
+    class CatalogoPoliticas {
+        - politicas: Map<Prioridad, PoliticaCancelacion>
+        + registrar(p: Prioridad, politica: PoliticaCancelacion): void
+        + politicaPara(p: Prioridad): PoliticaCancelacion
+    }
+}
+
+package videoconferencia {
+    interface Videoconferencia <<Target>> {
+        + crearSala(titulo: String, correoDocente: String): String
+    }
+    class ZoomAdapter <<Adapter>>
+    class TeamsAdapter <<Adapter>>
+    class ProveedorZoomAPI <<Adaptee>> {
+        + generarMeeting(topic: String, hostEmail: String): String
+    }
+    class MicrosoftTeamsAPI <<Adaptee>> {
+        + scheduleOnlineMeeting(subject: String, organizer: String): String
+    }
+}
+
+package event {
+    interface ReservaObserver <<Observer>> {
+        + alOcurrir(evento: EventoReserva, reserva: Reserva): void
+    }
+    class ObservadorNotificaciones <<ConcreteObserver>>
+    class ObservadorCalendario <<ConcreteObserver>>
+    class ObservadorBitacora <<ConcreteObserver>> {
+        - registros: List<String>
+        + getRegistros(): List<String>
+    }
+    enum EventoReserva {
+        CREADA
+        CONFIRMADA
+        CANCELADA
+        REPROGRAMADA
+        REALIZADA
+    }
+}
+
+package notification {
+    interface Notificador {
+        + enviarNotificacion(destinatario: String, mensaje: String): void
+    }
+    class NotificadorCorreo
+}
+
+Usuario <|-- Estudiante
+Usuario <|-- Docente
+
+Estudiante "1" --> "0..*" Reserva : solicita
+Docente "1" --> "0..*" HorarioTutoria : publica
+Reserva "0..*" --> "1" HorarioTutoria : ocupa
+Reserva "0..*" --> "1" Asignatura
+Reserva --> EstadoReserva
+Reserva --> Modalidad
+Reserva --> Prioridad
+ReservaBuilder ..> Reserva : construye
+
+ServicioReservas --> RepositorioReservas
+ServicioReservas --> CatalogoPoliticas
+ServicioReservas --> Videoconferencia
+ServicioReservas "1" o-- "0..*" ReservaObserver
+ServicioReservas ..> ReservaBuilder
+RepositorioReservas <|.. RepositorioReservasMemoria
+
+PoliticaCancelacion <|.. CancelacionNormal
+PoliticaCancelacion <|.. CancelacionPrioritaria
+PoliticaCancelacion <|.. CancelacionGrupal
+CatalogoPoliticas "1" o-- "3..*" PoliticaCancelacion
+PoliticaCancelacion ..> Reserva : consulta horasRestantes()
+
+Videoconferencia <|.. ZoomAdapter
+Videoconferencia <|.. TeamsAdapter
+ZoomAdapter --> ProveedorZoomAPI : delega
+TeamsAdapter --> MicrosoftTeamsAPI : delega
+
+ReservaObserver <|.. ObservadorNotificaciones
+ReservaObserver <|.. ObservadorCalendario
+ReservaObserver <|.. ObservadorBitacora
+Reserva "1" o-- "0..*" ReservaObserver : notifica
+ReservaObserver ..> EventoReserva
+ObservadorNotificaciones --> Notificador
+Notificador <|.. NotificadorCorreo
+
+@enduml

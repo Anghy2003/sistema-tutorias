@@ -1,0 +1,114 @@
+@startuml
+title Incremento 1 - Dominio, servicio y construccion de la reserva (UEES)
+
+skinparam classAttributeIconSize 0
+
+abstract class Usuario {
+    - id: String
+    - nombre: String
+    - correo: String
+    + getNombre(): String
+    + getCorreo(): String
+}
+
+class Estudiante {
+    + agregarReserva(reserva: Reserva): void
+    + consultarTutorias(): List<Reserva>
+}
+
+class Docente {
+    + publicarHorario(horario: HorarioTutoria): void
+    + gestionarDisponibilidad(id: String, disponible: boolean): void
+    + consultarHorariosDisponibles(): List<HorarioTutoria>
+}
+
+class Asignatura {
+    - codigo: String
+    - nombre: String
+}
+
+class HorarioTutoria {
+    - fecha: LocalDate
+    - horaInicio: LocalTime
+    - horaFin: LocalTime
+    - disponible: boolean
+    + verificarDisponibilidad(): boolean
+    + reservar(): void
+    + liberar(): void
+}
+
+class Reserva <<Subject>> {
+    - id: String
+    - estado: EstadoReserva
+    - modalidad: Modalidad
+    - prioridad: Prioridad
+    - enlaceSesion: String
+    ~ Reserva(...)
+    + confirmar(): void
+    + cancelar(): void
+    + reprogramar(nuevo: HorarioTutoria): void
+    + marcarRealizada(): void
+    + horasRestantes(): long
+    + esVirtual(): boolean
+}
+
+class ReservaBuilder <<Builder>> {
+    + estudiante(e: Estudiante): ReservaBuilder
+    + horario(h: HorarioTutoria): ReservaBuilder
+    + asignatura(a: Asignatura): ReservaBuilder
+    + modalidad(m: Modalidad): ReservaBuilder
+    + prioridad(p: Prioridad): ReservaBuilder
+    + observacion(texto: String): ReservaBuilder
+    + build(): Reserva
+    - validar(): void
+}
+
+class ServicioReservas {
+    + crearReserva(reserva: Reserva): Reserva
+    + confirmarReserva(id: String): void
+    + cancelarReserva(id: String): void
+    + reprogramarReserva(id: String, h: HorarioTutoria): void
+    + marcarRealizada(id: String): void
+}
+
+interface RepositorioReservas {
+    + guardar(reserva: Reserva): void
+    + buscar(id: String): Reserva
+    + actualizar(reserva: Reserva): void
+}
+
+class RepositorioReservasMemoria
+
+enum EstadoReserva {
+    PENDIENTE
+    CONFIRMADA
+    CANCELADA
+    REALIZADA
+}
+
+enum Modalidad {
+    PRESENCIAL
+    VIRTUAL
+}
+
+enum Prioridad {
+    NORMAL
+    PRIORITARIA
+    GRUPAL
+}
+
+Usuario <|-- Estudiante
+Usuario <|-- Docente
+Estudiante "1" --> "0..*" Reserva : solicita
+Docente "1" --> "0..*" HorarioTutoria : publica
+Reserva "0..*" --> "1" HorarioTutoria : ocupa
+Reserva "0..*" --> "1" Asignatura
+Reserva --> EstadoReserva
+Reserva --> Modalidad
+Reserva --> Prioridad
+ReservaBuilder ..> Reserva : construye
+ServicioReservas ..> ReservaBuilder
+ServicioReservas --> RepositorioReservas
+RepositorioReservas <|.. RepositorioReservasMemoria
+
+@enduml
