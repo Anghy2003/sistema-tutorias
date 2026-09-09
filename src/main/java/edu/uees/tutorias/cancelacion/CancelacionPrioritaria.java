@@ -16,6 +16,6 @@ public class CancelacionPrioritaria implements PoliticaCancelacion {
 
     @Override
     public String descripcion() {
-        return "una tutoría prioritaria se cancela con al menos " + HORAS_MINIMAS + " hora de anticipación";
+        return "Una tutoría prioritaria se cancela con al menos " + HORAS_MINIMAS + " hora de anticipación";
     }
 }

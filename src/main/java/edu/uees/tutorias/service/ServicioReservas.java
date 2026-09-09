@@ -108,8 +108,7 @@ public class ServicioReservas {
         Reserva reserva = obtenerReserva(reservaId);
         PoliticaCancelacion politica = politicas.politicaPara(reserva.getPrioridad());
         if (!politica.puedeCancelar(reserva)) {
-            throw new IllegalStateException(
-                    "No se puede cancelar: " + politica.descripcion());
+            throw new IllegalStateException(politica.descripcion());
         }
         reserva.cancelar();
         reserva.getHorario().liberar();

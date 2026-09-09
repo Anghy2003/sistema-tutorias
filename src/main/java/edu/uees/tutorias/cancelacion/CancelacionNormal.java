@@ -16,6 +16,6 @@ public class CancelacionNormal implements PoliticaCancelacion {
 
     @Override
     public String descripcion() {
-        return "una tutoría normal se cancela con al menos " + HORAS_MINIMAS + " horas de anticipación";
+        return "Una tutoría normal se cancela con al menos " + HORAS_MINIMAS + " horas de anticipación";
     }
 }

@@ -17,6 +17,6 @@ public class CancelacionGrupal implements PoliticaCancelacion {
 
     @Override
     public String descripcion() {
-        return "una tutoría grupal se cancela con al menos " + HORAS_MINIMAS + " horas de anticipación";
+        return "Una tutoría grupal se cancela con al menos " + HORAS_MINIMAS + " horas de anticipación";
     }
 }
