@@ -248,15 +248,7 @@ public class App {
         }
         System.out.println("Tutorías de " + estudiante.getNombre() + ":");
         for (int i = 0; i < reservas.size(); i++) {
-            Reserva reserva = reservas.get(i);
-            System.out.println("  " + (i + 1) + ") " + reserva.getAsignatura().getNombre()
-                    + " | " + describirHorario(reserva.getHorario())
-                    + " | " + reserva.getModalidad()
-                    + " | " + reserva.getPrioridad()
-                    + " | Estado: " + reserva.getEstado());
-            if (reserva.esVirtual()) {
-                System.out.println("      Enlace: " + reserva.getEnlaceSesion());
-            }
+            System.out.println("  " + (i + 1) + ") " + describirReserva(reservas.get(i)));
         }
     }
 
@@ -289,15 +281,7 @@ public class App {
         }
         System.out.println("Sus reservas:");
         for (int i = 0; i < reservas.size(); i++) {
-            Reserva reserva = reservas.get(i);
-            System.out.println("  " + (i + 1) + ") " + reserva.getAsignatura().getNombre()
-                    + " | " + describirHorario(reserva.getHorario())
-                    + " | " + reserva.getModalidad()
-                    + " | " + reserva.getPrioridad()
-                    + " | Estado: " + reserva.getEstado());
-            if (reserva.esVirtual()) {
-                System.out.println("      Enlace: " + reserva.getEnlaceSesion());
-            }
+            System.out.println("  " + (i + 1) + ") " + describirReserva(reservas.get(i)));
         }
         int opcionElegida = leerNumero("Elija la reserva: ");
         if (opcionElegida < 1 || opcionElegida > reservas.size()) {
@@ -305,6 +289,23 @@ public class App {
             return null;
         }
         return reservas.get(opcionElegida - 1);
+    }
+
+    /**
+     * Arma la linea con la que se muestra una reserva. Antes este texto estaba
+     * duplicado en verMisTutorias() y en elegirReserva(), de modo que cualquier
+     * cambio de formato obligaba a editar los dos metodos.
+     */
+    private static String describirReserva(Reserva reserva) {
+        String descripcion = reserva.getAsignatura().getNombre()
+                + " | " + describirHorario(reserva.getHorario())
+                + " | " + reserva.getModalidad()
+                + " | " + reserva.getPrioridad()
+                + " | Estado: " + reserva.getEstado();
+        if (reserva.esVirtual()) {
+            descripcion += System.lineSeparator() + "      Enlace: " + reserva.getEnlaceSesion();
+        }
+        return descripcion;
     }
 
     private static String describirHorario(HorarioTutoria horario) {
