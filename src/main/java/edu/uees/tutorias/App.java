@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Function;
 
 import edu.uees.tutorias.domain.Asignatura;
 import edu.uees.tutorias.domain.Docente;
@@ -114,9 +115,7 @@ public class App {
             return;
         }
         System.out.println("Horarios disponibles del docente " + docente.getNombre() + ":");
-        for (int i = 0; i < disponibles.size(); i++) {
-            System.out.println("  " + (i + 1) + ") " + describirHorario(disponibles.get(i)));
-        }
+        mostrarLista(disponibles, App::describirHorario);
     }
 
     private static void solicitarTutoria() {
@@ -130,12 +129,9 @@ public class App {
             return;
         }
         System.out.println("Asignaturas:");
-        for (int i = 0; i < asignaturas.size(); i++) {
-            System.out.println("  " + (i + 1) + ") " + asignaturas.get(i).getNombre());
-        }
-        int opcionElegida = leerNumero("Elija la asignatura: ");
-        if (opcionElegida < 1 || opcionElegida > asignaturas.size()) {
-            System.out.println("Asignatura no válida.");
+        Asignatura asignatura = elegirDeLista(asignaturas, Asignatura::getNombre,
+                "Elija la asignatura: ", "Asignatura no válida.");
+        if (asignatura == null) {
             return;
         }
         Modalidad modalidad = elegirModalidad();
@@ -144,7 +140,7 @@ public class App {
             Reserva reserva = servicio.crearReserva(new ReservaBuilder()
                     .estudiante(estudiante)
                     .horario(horario)
-                    .asignatura(asignaturas.get(opcionElegida - 1))
+                    .asignatura(asignatura)
                     .modalidad(modalidad)
                     .prioridad(prioridad)
                     .build());
@@ -247,9 +243,7 @@ public class App {
             return;
         }
         System.out.println("Tutorías de " + estudiante.getNombre() + ":");
-        for (int i = 0; i < reservas.size(); i++) {
-            System.out.println("  " + (i + 1) + ") " + describirReserva(reservas.get(i)));
-        }
+        mostrarLista(reservas, App::describirReserva);
     }
 
     private static void verBitacora() {
@@ -262,15 +256,8 @@ public class App {
     }
 
     private static HorarioTutoria elegirHorario(List<HorarioTutoria> disponibles) {
-        for (int i = 0; i < disponibles.size(); i++) {
-            System.out.println("  " + (i + 1) + ") " + describirHorario(disponibles.get(i)));
-        }
-        int opcionElegida = leerNumero("Elija el horario: ");
-        if (opcionElegida < 1 || opcionElegida > disponibles.size()) {
-            System.out.println("Horario no válido.");
-            return null;
-        }
-        return disponibles.get(opcionElegida - 1);
+        return elegirDeLista(disponibles, App::describirHorario,
+                "Elija el horario: ", "Horario no válido.");
     }
 
     private static Reserva elegirReserva() {
@@ -280,15 +267,34 @@ public class App {
             return null;
         }
         System.out.println("Sus reservas:");
-        for (int i = 0; i < reservas.size(); i++) {
-            System.out.println("  " + (i + 1) + ") " + describirReserva(reservas.get(i)));
+        return elegirDeLista(reservas, App::describirReserva,
+                "Elija la reserva: ", "Reserva no válida.");
+    }
+
+    /**
+     * Muestra una lista numerada. El mismo bucle estaba repetido en los cinco
+     * puntos del menu que presentan opciones al estudiante.
+     */
+    private static <T> void mostrarLista(List<T> elementos, Function<T, String> descripcion) {
+        for (int i = 0; i < elementos.size(); i++) {
+            System.out.println("  " + (i + 1) + ") " + descripcion.apply(elementos.get(i)));
         }
-        int opcionElegida = leerNumero("Elija la reserva: ");
-        if (opcionElegida < 1 || opcionElegida > reservas.size()) {
-            System.out.println("Reserva no válida.");
+    }
+
+    /**
+     * Presenta la lista, lee la opcion y valida el rango. Devuelve null cuando la
+     * opcion no existe, que es la forma en que los metodos del menu ya cancelaban
+     * la operacion.
+     */
+    private static <T> T elegirDeLista(List<T> elementos, Function<T, String> descripcion,
+                                       String mensaje, String mensajeNoValido) {
+        mostrarLista(elementos, descripcion);
+        int opcionElegida = leerNumero(mensaje);
+        if (opcionElegida < 1 || opcionElegida > elementos.size()) {
+            System.out.println(mensajeNoValido);
             return null;
         }
-        return reservas.get(opcionElegida - 1);
+        return elementos.get(opcionElegida - 1);
     }
 
     /**
