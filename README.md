@@ -224,7 +224,57 @@ docs: actualizar UML del incremento 1
 docs: actualizar README y decisiones de diseño
 ```
 
-## 12. Declaración de uso de IA
+## 12. Ae4 — Kata de refactorización de la capa de consola
+
+El incremento de Ae3 concentró el trabajo de diseño en el dominio y en el servicio. La capa de
+consola (`App`) quedó fuera de ese esfuerzo y acumuló deuda técnica: código duplicado, un método
+largo y manejo de errores repetido. Ae4 se trabaja en la rama `ae4-refactorizacion` y **no agrega
+funcionalidad**: mejora la estructura interna de `App` conservando exactamente el comportamiento
+observable.
+
+### Línea base
+
+`docs/ae4/entrada-casos.txt` guioniza una sesión de consola con siete casos (ver horarios, crear una
+tutoría virtual, confirmar, cancelar, listar, opción fuera de rango y opción inexistente) y
+`docs/ae4/salida-antes.txt` guarda su salida antes de refactorizar:
+
+```
+mvn -q -DskipTests compile
+java -cp target/classes edu.uees.tutorias.App < docs/ae4/entrada-casos.txt > docs/ae4/salida-antes.txt
+```
+
+### Refactorizaciones aplicadas
+
+| # | Problema concreto | Técnica | Commit |
+|---|---|---|---|
+| 1 | `manana` se usaba como base para calcular otras fechas; `posicion` y `linea` no decían qué contenían. | Rename | `refactor: renombrar variables de la capa de consola` |
+| 2 | `== 2` y `case 2/3` decidían modalidad y prioridad lejos del menú que las imprime. | Constantes expresivas | `refactor: nombrar las opciones de modalidad y prioridad` |
+| 3 | El bloque que describe una reserva estaba duplicado literalmente en `verMisTutorias` y `elegirReserva`. | Extract Method | `refactor: extraer la descripcion de una reserva` |
+| 4 | El patrón «listar numerado → leer opción → validar rango» aparecía cinco veces. | Extract Method + simplificación | `refactor: unificar la seleccion de elementos de una lista` |
+| 5 | El mismo `try/catch` con mensaje se repetía en las cinco operaciones del menú. | Extract Method | `refactor: extraer el manejo de errores de las operaciones` |
+
+### Resultado medido
+
+| Métrica sobre `App.java` | Antes | Después |
+|---|---|---|
+| Bucles de listado numerado | 5 | 1 |
+| Bloques `try/catch` idénticos | 5 | 1 |
+| Método más largo | 35 líneas | 30 líneas |
+| Líneas de código (sin comentarios ni vacías) | 293 | 285 |
+| Métodos | 18 | 22 |
+
+### Verificación
+
+Después de cada refactorización se ejecutaron las 32 pruebas y la misma sesión guionada, comparando
+la salida con la línea base:
+
+```
+mvn clean test                     -> Tests run: 32, Failures: 0, Errors: 0, Skipped: 0
+fc.exe docse4\salida-antes.txt docse4\salida-paso5-errores.txt
+                                   -> FC: no se han encontrado diferencias
+```
+
+## 13. Declaración de uso de IA
 
 Durante el desarrollo de esta actividad utilicé herramientas de inteligencia artificial como apoyo
 para organizar la estructura del incremento, revisar las decisiones de diseño y redactar la
