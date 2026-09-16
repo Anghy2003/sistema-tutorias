@@ -77,11 +77,11 @@ public class App {
 
     private static void cargarDatosIniciales() {
         docente = new Docente("D01", "María Torres", "mtorres@uees.edu.ec");
-        LocalDate manana = LocalDate.now().plusDays(1);
-        docente.publicarHorario(new HorarioTutoria("H01", docente, manana, LocalTime.of(10, 0), LocalTime.of(11, 0)));
-        docente.publicarHorario(new HorarioTutoria("H02", docente, manana, LocalTime.of(15, 0), LocalTime.of(16, 0)));
-        docente.publicarHorario(new HorarioTutoria("H03", docente, manana.plusDays(1), LocalTime.of(9, 0), LocalTime.of(10, 0)));
-        docente.publicarHorario(new HorarioTutoria("H04", docente, manana.plusDays(2), LocalTime.of(11, 0), LocalTime.of(12, 0)));
+        LocalDate fechaBase = LocalDate.now().plusDays(1);
+        docente.publicarHorario(new HorarioTutoria("H01", docente, fechaBase, LocalTime.of(10, 0), LocalTime.of(11, 0)));
+        docente.publicarHorario(new HorarioTutoria("H02", docente, fechaBase, LocalTime.of(15, 0), LocalTime.of(16, 0)));
+        docente.publicarHorario(new HorarioTutoria("H03", docente, fechaBase.plusDays(1), LocalTime.of(9, 0), LocalTime.of(10, 0)));
+        docente.publicarHorario(new HorarioTutoria("H04", docente, fechaBase.plusDays(2), LocalTime.of(11, 0), LocalTime.of(12, 0)));
         estudiante = new Estudiante("E01", "Carlos Vera", "cvera@uees.edu.ec");
         asignaturas = List.of(
                 new Asignatura("A01", "Diseño de Software"),
@@ -129,8 +129,8 @@ public class App {
         for (int i = 0; i < asignaturas.size(); i++) {
             System.out.println("  " + (i + 1) + ") " + asignaturas.get(i).getNombre());
         }
-        int posicion = leerNumero("Elija la asignatura: ");
-        if (posicion < 1 || posicion > asignaturas.size()) {
+        int opcionElegida = leerNumero("Elija la asignatura: ");
+        if (opcionElegida < 1 || opcionElegida > asignaturas.size()) {
             System.out.println("Asignatura no válida.");
             return;
         }
@@ -140,7 +140,7 @@ public class App {
             Reserva reserva = servicio.crearReserva(new ReservaBuilder()
                     .estudiante(estudiante)
                     .horario(horario)
-                    .asignatura(asignaturas.get(posicion - 1))
+                    .asignatura(asignaturas.get(opcionElegida - 1))
                     .modalidad(modalidad)
                     .prioridad(prioridad)
                     .build());
@@ -267,12 +267,12 @@ public class App {
         for (int i = 0; i < disponibles.size(); i++) {
             System.out.println("  " + (i + 1) + ") " + describirHorario(disponibles.get(i)));
         }
-        int posicion = leerNumero("Elija el horario: ");
-        if (posicion < 1 || posicion > disponibles.size()) {
+        int opcionElegida = leerNumero("Elija el horario: ");
+        if (opcionElegida < 1 || opcionElegida > disponibles.size()) {
             System.out.println("Horario no válido.");
             return null;
         }
-        return disponibles.get(posicion - 1);
+        return disponibles.get(opcionElegida - 1);
     }
 
     private static Reserva elegirReserva() {
@@ -293,12 +293,12 @@ public class App {
                 System.out.println("      Enlace: " + reserva.getEnlaceSesion());
             }
         }
-        int posicion = leerNumero("Elija la reserva: ");
-        if (posicion < 1 || posicion > reservas.size()) {
+        int opcionElegida = leerNumero("Elija la reserva: ");
+        if (opcionElegida < 1 || opcionElegida > reservas.size()) {
             System.out.println("Reserva no válida.");
             return null;
         }
-        return reservas.get(posicion - 1);
+        return reservas.get(opcionElegida - 1);
     }
 
     private static String describirHorario(HorarioTutoria horario) {
@@ -309,9 +309,9 @@ public class App {
     private static int leerNumero(String mensaje) {
         while (true) {
             System.out.print(mensaje);
-            String linea = teclado.nextLine().trim();
+            String entrada = teclado.nextLine().trim();
             try {
-                return Integer.parseInt(linea);
+                return Integer.parseInt(entrada);
             } catch (NumberFormatException e) {
                 System.out.println("Ingrese un número válido.");
             }
