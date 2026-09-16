@@ -25,6 +25,10 @@ import edu.uees.tutorias.videoconferencia.ZoomAdapter;
 
 public class App {
 
+    private static final int OPCION_MODALIDAD_VIRTUAL = 2;
+    private static final int OPCION_PRIORIDAD_PRIORITARIA = 2;
+    private static final int OPCION_PRIORIDAD_GRUPAL = 3;
+
     private static final Scanner teclado = new Scanner(System.in);
     private static final RepositorioReservasMemoria repositorio = new RepositorioReservasMemoria();
     private static final ObservadorBitacora bitacora = new ObservadorBitacora();
@@ -157,7 +161,9 @@ public class App {
         System.out.println("Modalidad:");
         System.out.println("  1) Presencial");
         System.out.println("  2) Virtual (se genera enlace de videoconferencia)");
-        return leerNumero("Elija la modalidad: ") == 2 ? Modalidad.VIRTUAL : Modalidad.PRESENCIAL;
+        return leerNumero("Elija la modalidad: ") == OPCION_MODALIDAD_VIRTUAL
+                ? Modalidad.VIRTUAL
+                : Modalidad.PRESENCIAL;
     }
 
     private static Prioridad elegirPrioridad() {
@@ -166,8 +172,8 @@ public class App {
         System.out.println("  2) Prioritaria - cancelación hasta 1 hora antes");
         System.out.println("  3) Grupal      - cancelación hasta 24 horas antes");
         return switch (leerNumero("Elija la prioridad: ")) {
-            case 2 -> Prioridad.PRIORITARIA;
-            case 3 -> Prioridad.GRUPAL;
+            case OPCION_PRIORIDAD_PRIORITARIA -> Prioridad.PRIORITARIA;
+            case OPCION_PRIORIDAD_GRUPAL -> Prioridad.GRUPAL;
             default -> Prioridad.NORMAL;
         };
     }

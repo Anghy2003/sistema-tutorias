@@ -1,0 +1,136 @@
+=============================================
+   SISTEMA DE GESTIÓN DE TUTORÍAS - UEES
+=============================================
+Estudiante: Carlos Vera (cvera@uees.edu.ec)
+
+--------- MENÚ PRINCIPAL ---------
+1. Ver horarios disponibles
+2. Solicitar una tutoría
+3. Confirmar una reserva
+4. Cancelar una reserva
+5. Reprogramar una reserva
+6. Marcar tutoría como realizada
+7. Ver mis tutorías
+8. Ver bitácora del sistema
+0. Salir
+Seleccione una opción: Horarios disponibles del docente María Torres:
+  1) 2026-09-16 de 10:00 a 11:00 con María Torres
+  2) 2026-09-16 de 15:00 a 16:00 con María Torres
+  3) 2026-09-17 de 09:00 a 10:00 con María Torres
+  4) 2026-09-18 de 11:00 a 12:00 con María Torres
+
+--------- MENÚ PRINCIPAL ---------
+1. Ver horarios disponibles
+2. Solicitar una tutoría
+3. Confirmar una reserva
+4. Cancelar una reserva
+5. Reprogramar una reserva
+6. Marcar tutoría como realizada
+7. Ver mis tutorías
+8. Ver bitácora del sistema
+0. Salir
+Seleccione una opción:   1) 2026-09-16 de 10:00 a 11:00 con María Torres
+  2) 2026-09-16 de 15:00 a 16:00 con María Torres
+  3) 2026-09-17 de 09:00 a 10:00 con María Torres
+  4) 2026-09-18 de 11:00 a 12:00 con María Torres
+Elija el horario: Asignaturas:
+  1) Diseño de Software
+  2) Base de Datos
+  3) Programación Orientada a Objetos
+Elija la asignatura: Modalidad:
+  1) Presencial
+  2) Virtual (se genera enlace de videoconferencia)
+Elija la modalidad: Prioridad (define el plazo mínimo para cancelar):
+  1) Normal      - cancelación hasta 2 horas antes
+  2) Prioritaria - cancelación hasta 1 hora antes
+  3) Grupal      - cancelación hasta 24 horas antes
+Elija la prioridad: Correo enviado a cvera@uees.edu.ec: Se registró su reserva de Diseño de Software para el 2026-09-16. Enlace: https://zoom.us/j/1802136536
+Reserva registrada en estado PENDIENTE.
+Enlace de la sala: https://zoom.us/j/1802136536
+
+--------- MENÚ PRINCIPAL ---------
+1. Ver horarios disponibles
+2. Solicitar una tutoría
+3. Confirmar una reserva
+4. Cancelar una reserva
+5. Reprogramar una reserva
+6. Marcar tutoría como realizada
+7. Ver mis tutorías
+8. Ver bitácora del sistema
+0. Salir
+Seleccione una opción: Sus reservas:
+  1) Diseño de Software | 2026-09-16 de 10:00 a 11:00 con María Torres | VIRTUAL | NORMAL | Estado: PENDIENTE
+      Enlace: https://zoom.us/j/1802136536
+Elija la reserva: Correo enviado a cvera@uees.edu.ec: Su reserva de Diseño de Software fue confirmada
+[Calendario] Sesión agendada el 2026-09-16 a las 10:00 con María Torres
+La reserva quedó en estado CONFIRMADA.
+
+--------- MENÚ PRINCIPAL ---------
+1. Ver horarios disponibles
+2. Solicitar una tutoría
+3. Confirmar una reserva
+4. Cancelar una reserva
+5. Reprogramar una reserva
+6. Marcar tutoría como realizada
+7. Ver mis tutorías
+8. Ver bitácora del sistema
+0. Salir
+Seleccione una opción: Sus reservas:
+  1) Diseño de Software | 2026-09-16 de 10:00 a 11:00 con María Torres | VIRTUAL | NORMAL | Estado: CONFIRMADA
+      Enlace: https://zoom.us/j/1802136536
+Elija la reserva: Correo enviado a cvera@uees.edu.ec: Su reserva de Diseño de Software fue cancelada
+[Calendario] Sesión del 2026-09-16 retirada de la agenda
+La reserva quedó en estado CANCELADA y el horario se liberó.
+
+--------- MENÚ PRINCIPAL ---------
+1. Ver horarios disponibles
+2. Solicitar una tutoría
+3. Confirmar una reserva
+4. Cancelar una reserva
+5. Reprogramar una reserva
+6. Marcar tutoría como realizada
+7. Ver mis tutorías
+8. Ver bitácora del sistema
+0. Salir
+Seleccione una opción: Tutorías de Carlos Vera:
+  1) Diseño de Software | 2026-09-16 de 10:00 a 11:00 con María Torres | VIRTUAL | NORMAL | Estado: CANCELADA
+      Enlace: https://zoom.us/j/1802136536
+
+--------- MENÚ PRINCIPAL ---------
+1. Ver horarios disponibles
+2. Solicitar una tutoría
+3. Confirmar una reserva
+4. Cancelar una reserva
+5. Reprogramar una reserva
+6. Marcar tutoría como realizada
+7. Ver mis tutorías
+8. Ver bitácora del sistema
+0. Salir
+Seleccione una opción: Sus reservas:
+  1) Diseño de Software | 2026-09-16 de 10:00 a 11:00 con María Torres | VIRTUAL | NORMAL | Estado: CANCELADA
+      Enlace: https://zoom.us/j/1802136536
+Elija la reserva: Reserva no válida.
+
+--------- MENÚ PRINCIPAL ---------
+1. Ver horarios disponibles
+2. Solicitar una tutoría
+3. Confirmar una reserva
+4. Cancelar una reserva
+5. Reprogramar una reserva
+6. Marcar tutoría como realizada
+7. Ver mis tutorías
+8. Ver bitácora del sistema
+0. Salir
+Seleccione una opción: Esa opción no existe, intente de nuevo.
+
+--------- MENÚ PRINCIPAL ---------
+1. Ver horarios disponibles
+2. Solicitar una tutoría
+3. Confirmar una reserva
+4. Cancelar una reserva
+5. Reprogramar una reserva
+6. Marcar tutoría como realizada
+7. Ver mis tutorías
+8. Ver bitácora del sistema
+0. Salir
+Seleccione una opción: Gracias por usar el sistema. ¡Hasta pronto!
