@@ -136,7 +136,7 @@ public class App {
         }
         Modalidad modalidad = elegirModalidad();
         Prioridad prioridad = elegirPrioridad();
-        try {
+        ejecutarOperacion("No se pudo crear la reserva: ", () -> {
             Reserva reserva = servicio.crearReserva(new ReservaBuilder()
                     .estudiante(estudiante)
                     .horario(horario)
@@ -148,9 +148,7 @@ public class App {
             if (reserva.esVirtual()) {
                 System.out.println("Enlace de la sala: " + reserva.getEnlaceSesion());
             }
-        } catch (Exception e) {
-            System.out.println("No se pudo crear la reserva: " + e.getMessage());
-        }
+        });
     }
 
     private static Modalidad elegirModalidad() {
@@ -179,12 +177,10 @@ public class App {
         if (reserva == null) {
             return;
         }
-        try {
+        ejecutarOperacion("No se pudo confirmar: ", () -> {
             servicio.confirmarReserva(reserva.getId());
             System.out.println("La reserva quedó en estado " + reserva.getEstado() + ".");
-        } catch (Exception e) {
-            System.out.println("No se pudo confirmar: " + e.getMessage());
-        }
+        });
     }
 
     private static void cancelarReserva() {
@@ -192,12 +188,10 @@ public class App {
         if (reserva == null) {
             return;
         }
-        try {
+        ejecutarOperacion("No se pudo cancelar: ", () -> {
             servicio.cancelarReserva(reserva.getId());
             System.out.println("La reserva quedó en estado " + reserva.getEstado() + " y el horario se liberó.");
-        } catch (Exception e) {
-            System.out.println("No se pudo cancelar: " + e.getMessage());
-        }
+        });
     }
 
     private static void reprogramarReserva() {
@@ -215,12 +209,10 @@ public class App {
         if (nuevoHorario == null) {
             return;
         }
-        try {
+        ejecutarOperacion("No se pudo reprogramar: ", () -> {
             servicio.reprogramarReserva(reserva.getId(), nuevoHorario);
             System.out.println("Reserva reprogramada para el " + describirHorario(nuevoHorario) + ". Queda pendiente de confirmación.");
-        } catch (Exception e) {
-            System.out.println("No se pudo reprogramar: " + e.getMessage());
-        }
+        });
     }
 
     private static void marcarRealizada() {
@@ -228,12 +220,10 @@ public class App {
         if (reserva == null) {
             return;
         }
-        try {
+        ejecutarOperacion("No se pudo marcar como realizada: ", () -> {
             servicio.marcarRealizada(reserva.getId());
             System.out.println("La tutoría quedó registrada como " + reserva.getEstado() + ".");
-        } catch (Exception e) {
-            System.out.println("No se pudo marcar como realizada: " + e.getMessage());
-        }
+        });
     }
 
     private static void verMisTutorias() {
@@ -269,6 +259,18 @@ public class App {
         System.out.println("Sus reservas:");
         return elegirDeLista(reservas, App::describirReserva,
                 "Elija la reserva: ", "Reserva no válida.");
+    }
+
+    /**
+     * Ejecuta una operacion del servicio y traduce cualquier fallo al mismo
+     * formato de mensaje. Los cinco metodos del menu repetian este try/catch.
+     */
+    private static void ejecutarOperacion(String mensajeError, Runnable operacion) {
+        try {
+            operacion.run();
+        } catch (Exception e) {
+            System.out.println(mensajeError + e.getMessage());
+        }
     }
 
     /**
